@@ -182,12 +182,6 @@ export default function InvoiceTool() {
       {/* ── LEFT · SYSTEM FORM ─────────────────────────────────────── */}
       <div className="nav1-form">
 
-        {/* header bar: N */}
-        <div style={{ display:"flex", justifyContent:"flex-end", alignItems:"center",
-                      padding:"22px 26px 0" }}>
-          <span style={{ fontFamily:SANS, fontSize:15, fontWeight:500, color:MUST }}>N</span>
-        </div>
-
         {/* scrolling column */}
         <div className="sys-col" style={{ flex:1, overflowY:"auto", padding:"20px 26px 8px" }}>
 
@@ -392,9 +386,6 @@ export default function InvoiceTool() {
                 <p style={sn}>{money(finalTotal)}</p>
               </div>
             </div>
-
-            {/* 5 · FOOTER */}
-            <div style={{ textAlign:"center" }}><p style={lg}>S</p></div>
 
           </div>
         </div>
