@@ -305,7 +305,7 @@ export default function InvoiceTool() {
             Export Invoice PDF →
           </button>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end" }}>
-            <span style={{ fontFamily:SANS, fontSize:15, fontWeight:500, color:MUST }}>S</span>
+            <span style={{ fontFamily:SANS, fontSize:15, fontWeight:500, color:MUST }}></span>
             <span style={{ fontFamily:SANS, fontSize:10, color:MUTE }}>
               NS_Invoice_{invoiceNo}
             </span>
