@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 
+
 /* ════════════════════════════════════════════════════════════════════
    NAV1 — Invoice Maker
    System-styled tool chrome (matches navaalsaaed.com) wrapping the
