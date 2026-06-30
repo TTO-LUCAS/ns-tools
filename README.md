@@ -1,55 +1,53 @@
-# NAV1 — Invoice Maker
+# NAV1 — Tools
 
-A single-page invoice tool. The client fills in the form, watches the
-NAV1-styled invoice update live, and exports a print-ready A4 PDF named
-`NS_Invoice_<number>`. No design software, no accounts, no backend.
+One app, three tools behind a landing page:
+- **Invoice Maker**
+- **Cold Cover Letter**
+- **Known Cover Letter**
 
-Built to live behind a password on a non-indexed page.
+Built to sit behind a password on a non-indexed page. Desktop-only (a block
+shows on phones, with a "continue anyway" option).
 
 ## Run locally
 ```bash
 npm install
-npm run dev          # http://localhost:5173 — export works here
+npm run dev          # http://localhost:5173 — fonts + export work here
 ```
 
-## Deploy to Vercel (recommended: GitHub)
-1. Push this folder to a new GitHub repo.
-2. vercel.com → Add New → Project → import the repo.
-3. Framework preset is auto-detected as **Vite**. Click Deploy.
+## Structure
+- `src/App.jsx`             — landing/router + mobile block
+- `src/Landing.jsx`         — animated landing (labels route to each tool)
+- `src/InvoiceTool.jsx`     — invoice maker
+- `src/CoverLetterTool.jsx` — shared Cold + Known cover letter tool
 
-Or via CLI:
-```bash
-npm i -g vercel
-vercel               # follow prompts; accept Vite defaults
-vercel --prod        # promote to the production URL
-```
+## Deploy to Vercel
+Push to GitHub → import on vercel.com (auto-detects Vite). Or `vercel` via CLI.
 
-## Keep it out of Google (already configured)
-Three layers ship with the project, no action needed:
-- `<meta name="robots" content="noindex, nofollow">` in `index.html`
-- `public/robots.txt` disallowing all crawlers
-- `X-Robots-Tag: noindex` response header in `vercel.json`
+## Non-indexing (already configured)
+`noindex` meta tag (`index.html`), `public/robots.txt`, and an `X-Robots-Tag`
+header (`vercel.json`).
 
-## Turn on the password (free, Hobby plan)
-The gate is HTTP Basic Auth via `middleware.js`. It's OFF until you set a password:
-1. Vercel → your project → **Settings → Environment Variables**.
-2. Add `AUTH_PASSWORD` = your chosen password. (Optionally `AUTH_USER`, default `navaal`.)
-3. Redeploy (Deployments → ⋯ → Redeploy, or push any commit).
+## Password (free, Hobby plan)
+`middleware.js` gates the whole app with HTTP Basic Auth — OFF until you set an
+`AUTH_PASSWORD` environment variable in Vercel (Settings → Environment Variables),
+then redeploy. Optional `AUTH_USER` (default `navaal`).
 
-Visitors now get a username/password prompt before anything loads. To change
-the password, edit the env var and redeploy. To disable, delete `AUTH_PASSWORD`
-and redeploy.
+## Editing the fixed details
+- Invoice sender/bank: `FROM` and `ACCOUNT` at the top of `src/InvoiceTool.jsx`
+- Cover letter sender: `FROM` at the top of `src/CoverLetterTool.jsx`
+- Brand yellow: `#F8C14C` (constant `YELLOW`)
+- GST rate: `GST_RATE` in `src/InvoiceTool.jsx`
 
-## Editing the fixed details (top of `src/InvoiceTool.jsx`)
-- `FROM`     — sender name, email, phone, ABN
-- `ACCOUNT`  — bank name, BSB, account number  ← replace placeholders when the
-              client's banking info arrives, then redeploy
-- `GST_RATE` — `0.10` (10%)
-- `MUST`     — mustard accent hex, if you want to match the site exactly
+## Signature
+The cover letters show a magenta placeholder box where the signature PNG will go
+(component `Sig` in `src/CoverLetterTool.jsx`). Swap the box for an `<img>` at the
+same size/position when the PNG arrives.
 
 ## Notes
-- Fonts (Neue Haas Unica W1G Medium, EB Garamond) load from the web and render
-  once deployed. Helvetica is the fallback.
-- Invoice number is a random 5-digit number, regenerated each load and after each
-  export; the field is editable if one ever clashes.
-- Export opens the invoice in its own A4 window and triggers Save-as-PDF.
+- Fonts (Neue Haas Unica W1G Medium, EB Garamond) load from the web; Helvetica is
+  the fallback.
+- Cover letter messages are capped to keep each letter on a single A4 page; the
+  caps live in `COLD_MAX_MSG` / `KNOWN_MAX_MSG` and may want a small tweak once
+  you see them rendered in the real font.
+- Cover letter exports are named `NS_C_CoverLetter_<company>` /
+  `NS_K_CoverLetter_<company>`; invoices `NS_Invoice_<number>`.

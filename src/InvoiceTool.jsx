@@ -44,7 +44,7 @@ const Gap = () => <div style={{ height: RS }} />;
 
 /* ── SYSTEM-UI TOKENS (tool chrome, matches the website) ────────────── */
 const INK   = "#111";
-const MUST  = "#E3A52E";   // mustard accent
+const MUST  = "#F8C14C";   // brand yellow
 const PANEL = "#F3F2EC";   // form bg
 const STAGE = "#E9E8E2";   // preview bg
 const LINE  = "#D9D7CF";   // hairline
@@ -88,7 +88,7 @@ function Field({ label, value, onChange, placeholder }) {
 }
 
 /* ════════════════════════════════════════════════════════════════════ */
-export default function InvoiceTool() {
+export default function InvoiceTool({ onBack }) {
   const [invoiceNo, setInvoiceNo] = useState("10001");
   const [recipient, setRecipient] = useState({ name:"", company:"", email:"", phone:"" });
   const [services,  setServices]  = useState([{ desc:"", price:"" }]);
@@ -191,6 +191,14 @@ export default function InvoiceTool() {
 
         {/* scrolling column */}
         <div className="sys-col" style={{ flex:1, overflowY:"auto", padding:"20px 26px 8px" }}>
+
+          {onBack && (
+            <div onClick={onBack} className="lnk"
+              style={{ fontFamily:SANS, fontSize:11, fontWeight:500, color:MUTE,
+                       cursor:"pointer", marginBottom:18, display:"inline-block" }}>
+              ← Tools
+            </div>
+          )}
 
           <div style={{ fontFamily:SANS, fontSize:12, fontWeight:500, color:INK, marginBottom:3 }}>
             Invoice Maker
