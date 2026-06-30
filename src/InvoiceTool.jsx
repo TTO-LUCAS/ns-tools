@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 
-
 /* ════════════════════════════════════════════════════════════════════
    NAV1 — Invoice Maker
    System-styled tool chrome (matches navaalsaaed.com) wrapping the
@@ -13,7 +12,7 @@ const GST_RATE = 0.10;                 // 10% AU GST
 const FROM = {
   name:  "Navaal Saeed",
   email: "hello@navaalsaaed.com",
-  phone: "0411 462 166",
+  phone: "0412 255 250",
   abn:   "ABN: 00-000-0000",
 };
 
@@ -70,13 +69,34 @@ const money = (n) => { const v = Number(n) || 0; return "$" + (Number.isInteger(
 const todayDDMMYYYY = () => { const d=new Date(),p=(x)=>String(x).padStart(2,"0"); return `${p(d.getDate())}-${p(d.getMonth()+1)}-${d.getFullYear()}`; };
 const randomInvoiceNo = () => String(Math.floor(10000 + Math.random() * 90000));
 
+/* Module-level so it isn't recreated on every render (which would steal
+   focus and limit typing to one character at a time). */
+const fieldLabel = { display:"block", fontFamily:SANS, fontSize:9.5, fontWeight:500,
+  letterSpacing:".09em", textTransform:"uppercase", color:MUTE, marginBottom:5 };
+const fieldInput = { width:"100%", fontFamily:SANS, fontSize:13, fontWeight:500, color:INK,
+  background:"transparent", border:"none", borderBottom:`1px solid ${LINE}`,
+  padding:"5px 0", outline:"none" };
+
+function Field({ label, value, onChange, placeholder }) {
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <label style={fieldLabel}>{label}</label>
+      <input className="sys-in" value={value} placeholder={placeholder || ""}
+             onChange={(e) => onChange(e.target.value)} style={fieldInput} />
+    </div>
+  );
+}
+
 /* ════════════════════════════════════════════════════════════════════ */
 export default function InvoiceTool() {
   const [invoiceNo, setInvoiceNo] = useState("10001");
   const [recipient, setRecipient] = useState({ name:"", company:"", email:"", phone:"" });
   const [services,  setServices]  = useState([{ desc:"", price:"" }]);
-  const [notes,     setNotes]     = useState("");
-  const [removeGST, setRemoveGST] = useState(false);
+  const [notes,     setNotes]     = useState(
+    "This invoice is due within a 2 week timeframe upon receipt. If the scope of " +
+    "the project changes, additional charges will likely occur."
+  );
+  const [includeGST, setIncludeGST] = useState(true);
   const [date,      setDate]      = useState(todayDDMMYYYY());
   const previewRef = useRef(null);
 
@@ -84,7 +104,7 @@ export default function InvoiceTool() {
 
   const subtotal   = services.reduce((s, x) => s + (Number(x.price) || 0), 0);
   const gstPct     = Math.round(GST_RATE * 100);
-  const gstAmount  = removeGST ? 0 : subtotal * GST_RATE;
+  const gstAmount  = includeGST ? subtotal * GST_RATE : 0;
   const finalTotal = subtotal + gstAmount;
 
   const setService = (i, k, v) => setServices((a) => a.map((s, j) => j === i ? { ...s, [k]: v } : s));
@@ -131,20 +151,6 @@ export default function InvoiceTool() {
 
     setInvoiceNo(randomInvoiceNo());
   };
-
-  /* ── system-ui field primitives ─────────────────────────────────── */
-  const Field = ({ label, value, onChange, placeholder }) => (
-    <div style={{ marginBottom: 16 }}>
-      <label style={{ display:"block", fontFamily:SANS, fontSize:9.5, fontWeight:500,
-                      letterSpacing:".09em", textTransform:"uppercase", color:MUTE,
-                      marginBottom:5 }}>{label}</label>
-      <input className="sys-in" value={value} placeholder={placeholder || ""}
-             onChange={(e)=>onChange(e.target.value)}
-             style={{ width:"100%", fontFamily:SANS, fontSize:13, fontWeight:500, color:INK,
-                      background:"transparent", border:"none", borderBottom:`1px solid ${LINE}`,
-                      padding:"5px 0", outline:"none" }} />
-    </div>
-  );
 
   return (
     <div style={{ display:"flex", width:"100%", height:"100vh", overflow:"hidden",
@@ -205,7 +211,7 @@ export default function InvoiceTool() {
                  onChange={(v)=>setRecipient({...recipient,company:v})} />
           <Field label="Email" placeholder="john@nike.com" value={recipient.email}
                  onChange={(v)=>setRecipient({...recipient,email:v})} />
-          <Field label="Phone number" placeholder="0411 462 166" value={recipient.phone}
+          <Field label="Phone number" placeholder="04XX XXX XXX" value={recipient.phone}
                  onChange={(v)=>setRecipient({...recipient,phone:v})} />
 
           <div style={{ height:1, background:LINE, margin:"18px 0 22px" }} />
@@ -276,14 +282,14 @@ export default function InvoiceTool() {
                           marginBottom:9 }}>
               <label style={{ display:"flex", alignItems:"center", gap:7, cursor:"pointer",
                               color:MUTE }}>
-                <input type="checkbox" checked={removeGST}
-                       onChange={(e)=>setRemoveGST(e.target.checked)}
+                <input type="checkbox" checked={includeGST}
+                       onChange={(e)=>setIncludeGST(e.target.checked)}
                        style={{ width:13, height:13, accentColor:INK, cursor:"pointer" }} />
-                GST ({gstPct}%)
+                Include GST ({gstPct}%)
               </label>
-              <span style={{ textDecoration: removeGST ? "line-through" : "none",
-                             color: removeGST ? MUTE : INK }}>
-                {money(removeGST ? 0 : subtotal * GST_RATE)}
+              <span style={{ textDecoration: includeGST ? "none" : "line-through",
+                             color: includeGST ? INK : MUTE }}>
+                {money(includeGST ? subtotal * GST_RATE : 0)}
               </span>
             </div>
             <div style={{ display:"flex", justifyContent:"space-between", paddingTop:9,
@@ -291,24 +297,21 @@ export default function InvoiceTool() {
               <span>Final Total</span><span>{money(finalTotal)}</span>
             </div>
             <div style={{ fontSize:9.5, color:MUTE, marginTop:7 }}>
-              Tick to remove GST from this invoice.
+              Untick to remove GST from this invoice.
             </div>
           </div>
         </div>
 
-        {/* footer bar: S + export + filename */}
+        {/* footer bar: export + filename */}
         <div style={{ borderTop:`1px solid ${LINE}`, padding:"16px 26px 22px" }}>
           <button className="lnk" onClick={handleExport}
             style={{ width:"100%", fontFamily:SANS, fontSize:12, fontWeight:500, color:INK,
                      background:"transparent", border:"none", textAlign:"left", padding:0,
-                     marginBottom:16 }}>
+                     marginBottom:14 }}>
             Export Invoice PDF →
           </button>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end" }}>
-            <span style={{ fontFamily:SANS, fontSize:15, fontWeight:500, color:MUST }}></span>
-            <span style={{ fontFamily:SANS, fontSize:10, color:MUTE }}>
-              NS_Invoice_{invoiceNo}
-            </span>
+          <div style={{ fontFamily:SANS, fontSize:10, color:MUTE }}>
+            NS_Invoice_{invoiceNo}
           </div>
         </div>
       </div>
@@ -346,7 +349,7 @@ export default function InvoiceTool() {
                 <p style={si}>{recipient.name || "John Smith"}</p>
                 <p style={sr}>{recipient.company || "Nike"}</p>
                 <p style={sr}><Email value={recipient.email || "John@nike.com"} /></p>
-                <p style={sr}>{recipient.phone || "0411 462 166"}</p>
+                <p style={sr}>{recipient.phone || "04XX XXX XXX"}</p>
               </div>
               <div>
                 <p style={sn}>Account</p><Gap />
@@ -376,17 +379,22 @@ export default function InvoiceTool() {
             {/* 4 · PLEASE NOTE / TOTAL */}
             <div style={{ display:"grid", gridTemplateColumns:GF, alignItems:"start" }}>
               <div>
-                <p style={sn}>Please Note</p><Gap />
-                <p style={sr}>{notes || "—"}</p>
+                {notes.trim() && (<>
+                  <p style={sn}>Please Note</p><Gap />
+                  <p style={sr}>{notes}</p>
+                </>)}
               </div>
               <div />
               <div>
                 <p style={sn}>Total</p><Gap />
-                <p style={sn}>{removeGST ? money(subtotal) : `${money(subtotal)} + GST (${gstPct}%)`}</p><Gap />
+                <p style={sn}>{includeGST ? `${money(subtotal)} + GST (${gstPct}%)` : money(subtotal)}</p><Gap />
                 <p style={sn}>Final Total</p><Gap />
                 <p style={sn}>{money(finalTotal)}</p>
               </div>
             </div>
+
+            {/* 5 · FOOTER */}
+            <div style={{ textAlign:"center" }}><p style={lg}>S</p></div>
 
           </div>
         </div>
