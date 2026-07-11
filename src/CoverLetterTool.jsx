@@ -56,6 +56,22 @@ const SAMPLE =
 
 const Sig = () => <div style={{ width:SIG_W, height:SIG_H, background:MAGENTA }} />;
 
+/* Module-level form primitives — stable across renders so inputs keep focus */
+const fLabel = { display:"block", fontFamily:SANS, fontSize:9.5, fontWeight:500,
+  letterSpacing:".09em", textTransform:"uppercase", color:MUTE, marginBottom:5 };
+const fInput = { width:"100%", fontFamily:SANS, fontSize:13, fontWeight:500, color:INK,
+  background:"transparent", border:"none", borderBottom:`1px solid ${LINE}`,
+  padding:"5px 0", outline:"none" };
+function Field({ label, val, set, ph }) {
+  return (
+    <div style={{ marginBottom:16 }}>
+      <label style={fLabel}>{label}</label>
+      <input className="sys-in" value={val} placeholder={ph || ""}
+             onChange={(e) => set(e.target.value)} style={fInput} />
+    </div>
+  );
+}
+
 /* ════════════════════════════════════════════════════════════════════ */
 export default function CoverLetterTool({ variant = "cold", onBack }) {
   const isCold = variant === "cold";
@@ -108,7 +124,9 @@ export default function CoverLetterTool({ variant = "cold", onBack }) {
       <title>${fname}</title>
       <style>
         ${FONT_CSS}
-        *{box-sizing:border-box;} html,body{margin:0;padding:0;background:#fff;}
+        *{ box-sizing:border-box;
+           -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+        html,body{margin:0;padding:0;background:#fff;}
         @page{ size:A4; margin:0; }
         .cl{ width:210mm !important; height:297mm !important;
              box-shadow:none !important; overflow:hidden; }
@@ -136,20 +154,6 @@ export default function CoverLetterTool({ variant = "cold", onBack }) {
   const rPhone = recipient.phone   || "04XX XXX XXX";
   const bodyText = message || SAMPLE;
 
-  /* ── form primitives ─────────────────────────────────────────────── */
-  const fLabel = { display:"block", fontFamily:SANS, fontSize:9.5, fontWeight:500,
-    letterSpacing:".09em", textTransform:"uppercase", color:MUTE, marginBottom:5 };
-  const fInput = { width:"100%", fontFamily:SANS, fontSize:13, fontWeight:500, color:INK,
-    background:"transparent", border:"none", borderBottom:`1px solid ${LINE}`,
-    padding:"5px 0", outline:"none" };
-  const Field = ({ label, val, set, ph }) => (
-    <div style={{ marginBottom:16 }}>
-      <label style={fLabel}>{label}</label>
-      <input className="sys-in" value={val} placeholder={ph || ""}
-             onChange={(e)=>set(e.target.value)} style={fInput} />
-    </div>
-  );
-
   return (
     <div style={{ display:"flex", width:"100%", height:"100vh", overflow:"hidden",
                   fontFamily:SANS, background:PANEL }}>
@@ -166,6 +170,7 @@ export default function CoverLetterTool({ variant = "cold", onBack }) {
         .clstage{ flex:1; height:100vh; overflow:auto; display:flex; align-items:flex-start;
                   justify-content:center; background:${STAGE}; padding:40px 24px; position:relative; }
         @media print {
+          *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
           .clform{ display:none !important; }
           .clstage{ height:auto; overflow:visible; padding:0; background:#fff; display:block; }
           .clscale{ transform:none !important; }
